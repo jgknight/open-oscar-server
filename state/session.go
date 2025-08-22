@@ -69,12 +69,25 @@ type Session struct {
 	userStatusBitmask   uint32
 	clientID            string
 	remoteAddr          *netip.AddrPort
+	tocVersion          TOCVersion
 	lastObservedStates  [5]RateClassState
 	rateByClassID       [5]RateClassState
 	foodGroupVersions   [wire.MDir + 1]uint16
 	typingEventsEnabled bool
 	multiConnFlag       wire.MultiConnFlag
 }
+
+// TOCVersion is a bitmask that indicates the TOC protocol versions a client supports.
+type TOCVersion uint8
+
+const (
+	// SupportsTOC indicates client supports TOC protocol
+	SupportsTOC TOCVersion = 1 << iota
+	// SupportsTOC2 indicates client supports TOC2 protocol
+	SupportsTOC2
+	// SupportsTOC2Enhanced indicates client supports TOC2 Enhanced protocol
+	SupportsTOC2Enhanced
+)
 
 // NewSession returns a new instance of Session. By default, the user may have
 // up to 1000 pending messages before blocking.
@@ -141,6 +154,20 @@ func (s *Session) SetRateClasses(now time.Time, classes wire.RateLimitClasses) {
 	}
 
 	s.rateByClassID = newStates
+}
+
+// SetTocVersion sets the session TOC version
+func (s *Session) SetTocVersion(tocVersion TOCVersion) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.tocVersion = tocVersion
+}
+
+// TocVersion returns session TOC version
+func (s *Session) TocVersion() (tocVersion TOCVersion) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+	return s.tocVersion
 }
 
 // SetRemoteAddr sets the user's remote IP address

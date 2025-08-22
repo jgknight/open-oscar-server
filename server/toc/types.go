@@ -89,6 +89,25 @@ type TOCConfigStore interface {
 	User(ctx context.Context, screenName state.IdentScreenName) (*state.User, error)
 }
 
+type FeedbagManager interface {
+	// Feedbag fetches the contents of a user's feedbag for CONFIG2
+	Feedbag(ctx context.Context, screenName state.IdentScreenName) ([]wire.FeedbagItem, error)
+	UseFeedbag(ctx context.Context, screenName state.IdentScreenName) error
+}
+
+// FeedbagService defines the interface for managing server-side buddy lists
+// (feedbag) and related operations.
+type FeedbagService interface {
+	DeleteItem(ctx context.Context, sess *state.Session, inFrame wire.SNACFrame, inBody wire.SNAC_0x13_0x0A_FeedbagDeleteItem) (wire.SNACMessage, error)
+	Query(ctx context.Context, sess *state.Session, inFrame wire.SNACFrame) (wire.SNACMessage, error)
+	QueryIfModified(ctx context.Context, sess *state.Session, inFrame wire.SNACFrame, inBody wire.SNAC_0x13_0x05_FeedbagQueryIfModified) (wire.SNACMessage, error)
+	RespondAuthorizeToHost(ctx context.Context, sess *state.Session, inFrame wire.SNACFrame, inBody wire.SNAC_0x13_0x1A_FeedbagRespondAuthorizeToHost) error
+	RightsQuery(ctx context.Context, inFrame wire.SNACFrame) wire.SNACMessage
+	StartCluster(ctx context.Context, inFrame wire.SNACFrame, inBody wire.SNAC_0x13_0x11_FeedbagStartCluster)
+	UpsertItem(ctx context.Context, sess *state.Session, inFrame wire.SNACFrame, items []wire.FeedbagItem) (wire.SNACMessage, error)
+	Use(ctx context.Context, sess *state.Session) error
+}
+
 // CookieBaker defines methods for issuing and verifying AIM authentication tokens ("cookies").
 // These tokens are used for authenticating client sessions with AIM services.
 type CookieBaker interface {
