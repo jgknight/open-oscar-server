@@ -2,6 +2,7 @@ package toc
 
 import (
 	"context"
+	"net/http"
 
 	"github.com/google/uuid"
 	"github.com/mk6i/retro-aim-server/config"
@@ -122,4 +123,11 @@ type CookieBaker interface {
 
 type AdminService interface {
 	InfoChangeRequest(ctx context.Context, sess *state.Session, frame wire.SNACFrame, body wire.SNAC_0x07_0x04_AdminInfoChangeRequest) (wire.SNACMessage, error)
+}
+
+type OSCARProxyer interface {
+	Signon(ctx context.Context, args []byte, tocVersion state.TOCVersion) (*state.Session, []string)
+	RecvBOS(ctx context.Context, sessBOS *state.Session, chatRegistry *ChatRegistry, msgCh chan<- []string) error
+	RecvClientCmd(ctx context.Context, sessBOS *state.Session, chatRegistry *ChatRegistry, payload []byte, toCh chan<- []string, doAsync func(f func() error)) []string
+	NewServeMux() http.Handler
 }
